@@ -1,108 +1,77 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CFB Game Fantasy — Live (Multi-Player, Weekly + Season)</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CFB Game Fantasy — Safe Mode</title>
 <style>
-  :root{ --bg:#0b0d10; --card:#12161b; --muted:#8ea0b3; --text:#e8eef4; }
-  html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  header{padding:16px 20px;border-bottom:1px solid #1e242c;background:#0f1318;position:sticky;top:0;z-index:20}
-  h1{margin:0;font-size:18px;letter-spacing:.3px}
-  .sub{color:var(--muted);font-size:13px;margin-left:6px}
-  .err{background:#2a0f12;border:1px solid #42181c;color:#ffb4b4;padding:10px;border-radius:10px;margin:10px 0;display:none}
-  main{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
-  .card{background:var(--card);border:1px solid #1c222a;border-radius:14px;padding:16px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
-  .sep{height:1px;background:#1a2129;margin:12px 0}
-  .small{font-size:12px;color:var(--muted)}
-  .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid #26313c;color:var(--muted)}
-  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px}
-  .mono{font-family:ui-monospace, Menlo, Consolas, monospace}
-  .btn{ background:#14202b;border:1px solid #243241;color:var(--text); padding:8px 10px;border-radius:10px;cursor:pointer;font-size:13px }
-  .btn.small{padding:6px 8px;font-size:12px}
-
-  /* Splash */
-  #splash{display:block} #tracker{display:none}
-  .gamesGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-  .gameCard{background:#11171e;border:1px solid #1f2a36;border-radius:14px;overflow:hidden}
-  .band{height:6px}
-  .gameBody{padding:12px}
-  .teamsRow{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .team{display:flex;align-items:center;gap:8px;min-width:0}
-  .team img{width:26px;height:26px;border-radius:6px;border:1px solid #1e2732;background:#0f1318}
-  .team .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lockRow{display:flex;gap:8px;margin-top:10px}
-  .lockBtn{flex:1;background:#14202b;border:1px solid #243241;border-radius:10px;color:var(--text);padding:10px 12px;cursor:pointer}
-  .assignWrap{display:flex;gap:6px;align-items:center}
-
-  /* Top bar */
-  #topBar{display:none;margin-bottom:16px}
-  .topGrid{display:grid;grid-template-columns:1fr 260px 260px;gap:14px;align-items:start}
-  @media(max-width:980px){.topGrid{grid-template-columns:1fr}}
-  .teamStack{display:flex;flex-direction:column;gap:8px}
-  .teamline{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:12px;background:#0f1318;border:1px solid #1c2430}
-  .teamline .left{display:flex;gap:10px;align-items:center;min-width:0}
-  .teamline img{width:28px;height:28px;border-radius:6px;border:1px solid #1e2732;background:#0d1218}
-  .statusBox,.scoreBox{background:#0f1318;border:1px solid #1c2430;border-radius:12px;padding:12px}
-  .scoreBox{text-align:center}
-  .scoreBox .label{display:inline-block;margin-bottom:6px;border:1px solid #26313c;border-radius:999px;padding:4px 8px;color:var(--muted);font-size:12px}
-  .scoreBox .num{font-size:42px;font-weight:900}
-
-  /* Layout below */
-  .contentGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:1060px){.contentGrid{grid-template-columns:1fr}}
-  .log{max-height:260px;overflow:auto;background:#0f1318;border-radius:10px;padding:8px;border:1px solid #1b232d}
-
-  /* Leaderboards */
-  .lbHeaderRow{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  /* three columns: matchup | fantasy score | status */
-  .lbRow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px;border-radius:10px;border:1px solid #1c2430;background:#0f1318;margin-bottom:8px}
-  .lbTeam{display:flex;gap:8px;align-items:center;min-width:0}
-  .lbTeam img{width:20px;height:20px;border-radius:4px;border:1px solid #1c2330;background:#0d1218}
-  .lbName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lbPts{font-weight:700}
-  .lbMeta{font-size:12px;color:var(--muted)}
-  .lbSmall{font-size:11px;color:var(--muted)}
-  .scoreTag{display:inline-block;margin-left:6px;padding:2px 6px;border:1px solid #26313c;border-radius:6px;font-weight:700}
-
-  /* Players panel */
-  .panel{background:#0f1318;border:1px solid #1c2430;border-radius:12px;padding:12px}
-  .field{display:flex;gap:8px;margin-top:8px}
-  input[type="text"]{flex:1;background:#0b1117;border:1px solid #1b2633;border-radius:8px;color:var(--text);padding:8px}
-  select{background:#0b1117;border:1px solid #1b2633;border-radius:8px;color:var(--text);padding:8px}
+:root{--bg:#0b0d10;--card:#12161b;--muted:#8ea0b3;--text:#e8eef4}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+header{padding:16px 20px;border-bottom:1px solid #1e242c;background:#0f1318;position:sticky;top:0;z-index:20}
+h1{margin:0;font-size:18px;letter-spacing:.3px}
+.sub{color:var(--muted);font-size:13px;margin-left:6px}
+.err{background:#2a0f12;border:1px solid #42181c;color:#ffb4b4;padding:10px;border-radius:10px;margin:10px 20px;display:none}
+main{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
+.card{background:var(--card);border:1px solid #1c222a;border-radius:14px;padding:16px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+.sep{height:1px;background:#1a2129;margin:12px 0}
+.small{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid #26313c;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px}
+.mono{font-family:ui-monospace, Menlo, Consolas, monospace}
+.btn{background:#14202b;border:1px solid #243241;color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer;font-size:13px}
+.btn.small{padding:6px 8px;font-size:12px}
+.gamesGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.gameCard{background:#11171e;border:1px solid #1f2a36;border-radius:14px;overflow:hidden}
+.band{height:6px}
+.gameBody{padding:12px}
+.teamsRow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.team{display:flex;align-items:center;gap:8px;min-width:0}
+.team img{width:26px;height:26px;border-radius:6px;border:1px solid #1e2732;background:#0f1318}
+.team .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lockRow{display:flex;gap:8px;margin-top:10px}
+.lockBtn{flex:1;background:#14202b;border:1px solid #243241;border-radius:10px;color:var(--text);padding:10px 12px;cursor:pointer}
+#topBar{display:none;margin-bottom:16px}
+.topGrid{display:grid;grid-template-columns:1fr 260px 260px;gap:14px;align-items:start}
+@media(max-width:980px){.topGrid{grid-template-columns:1fr}}
+.teamStack{display:flex;flex-direction:column;gap:8px}
+.teamline{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:12px;background:#0f1318;border:1px solid #1c2430}
+.teamline .left{display:flex;gap:10px;align-items:center;min-width:0}
+.teamline img{width:28px;height:28px;border-radius:6px;border:1px solid #1e2732;background:#0d1218}
+.statusBox,.scoreBox{background:#0f1318;border:1px solid #1c2430;border-radius:12px;padding:12px}
+.scoreBox{text-align:center}
+.scoreBox .label{display:inline-block;margin-bottom:6px;border:1px solid #26313c;border-radius:999px;padding:4px 8px;color:#8ea0b3;font-size:12px}
+.scoreBox .num{font-size:42px;font-weight:900}
+.contentGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:1060px){.contentGrid{grid-template-columns:1fr}}
+.log{max-height:260px;overflow:auto;background:#0f1318;border-radius:10px;padding:8px;border:1px solid #1b232d}
+.lbHeaderRow{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.lbRow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px;border-radius:10px;border:1px solid #1c2430;background:#0f1318;margin-bottom:8px}
+.lbTeam{display:flex;gap:8px;align-items:center;min-width:0}
+.lbTeam img{width:20px;height:20px;border-radius:4px;border:1px solid #1c2330;background:#0d1218}
+.lbName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbPts{font-weight:700}
+.lbMeta{font-size:12px;color:#8ea0b3}
+.lbSmall{font-size:11px;color:#8ea0b3}
+.scoreTag{display:inline-block;margin-left:6px;padding:2px 6px;border:1px solid #26313c;border-radius:6px;font-weight:700}
 </style>
 </head>
 <body>
 <header>
-<div id="authBar" style="padding:10px 20px;background:#0f1318;border-bottom:1px solid #1e242c">
-  <input id="emailInput" type="email" placeholder="you@example.com"
-         style="background:#0b1117;border:1px solid #1b2633;border-radius:8px;color:#e8eef4;padding:6px 8px">
-  <button id="signinBtn">Send magic link</button>
-</div>
-
-  <h1>CFB Game Fantasy — Single & Multi Player <span class="sub">Live scoring · Weekly reset Mon 8am ET</span></h1>
+  <h1>CFB Game Fantasy — Safe Mode <span class="sub">always renders (debug date enabled)</span></h1>
 </header>
 
 <main>
   <div id="err" class="err"></div>
 
-  <!-- FULL-WIDTH TOP BAR -->
   <section id="topBar" class="card">
     <div id="liveHeader" class="small" style="margin-bottom:6px">—</div>
-
-    <!-- quick assign controls -->
-    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
-      <select id="setPickSelect" class="btn small" style="min-width:160px"></select>
-      <button id="setPickBtn" class="btn small">Set as my pick</button>
-    </div>
-
     <div class="topGrid">
       <div><div class="teamStack" id="boardTeams"></div></div>
       <div>
         <div class="scoreBox">
           <div class="label">Fantasy Score</div>
           <div id="fantasyScore" class="num">—</div>
-          <div class="small muted" id="flowNotes"></div>
+          <div class="small" id="flowNotes"></div>
         </div>
       </div>
       <div>
@@ -118,94 +87,48 @@
     </div>
   </section>
 
-  <!-- SPLASH -->
-  <section id="splash" class="card">
+  <section class="card">
+    <div class="lbHeaderRow">
+      <h2 style="margin:0">Leaderboard — Games (Top 10)</h2>
+      <button id="toggleAll" class="btn" aria-expanded="false">Show all</button>
+    </div>
+    <div class="small" id="lbNote" style="color:#8ea0b3">Loading…</div>
+    <div id="leaderboardCombined"></div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
     <div class="small" id="gameCount">Loading today’s slate…</div>
     <div class="sep"></div>
-
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-        <div><strong>Players</strong> <span class="small">(local to this browser)</span></div>
-        <div class="field">
-          <input id="newPlayerName" type="text" placeholder="Add player name…" />
-          <button class="btn small" id="addPlayerBtn">Add</button>
-          <button class="btn small" id="clearWeekBtn" title="Clear picks for this week only">Clear Week</button>
-        </div>
-      </div>
-      <div id="playersPanel" style="margin-top:10px"></div>
-    </div>
-
-    <div class="sep"></div>
-    <div id="gridNote" class="small muted" style="margin-bottom:8px">Showing games with spread ≤ 30 (unknown spreads included).</div>
+    <div id="gridNote" class="small" style="margin-bottom:8px;color:#8ea0b3">Showing games with spread ≤ 30 (unknown spreads included).</div>
     <div id="gamesGrid" class="gamesGrid"></div>
   </section>
 
-  <!-- CONTENT AFTER LOCK -->
-  <section id="tracker">
-    <div class="contentGrid">
-      <!-- LEFT: Games leaderboard -->
-      <section class="card">
-        <div class="lbHeaderRow">
-          <h2 style="margin:0">Leaderboard — Games Today (Top 10)</h2>
-          <button id="toggleAll" class="btn" aria-expanded="false">Show all</button>
-        </div>
-        <div class="small muted" id="lbNote">Mixed finals + in-progress. Sorted by fantasy score.</div>
-        <div id="leaderboardCombined"></div>
-      </section>
-
-      <!-- RIGHT: Players leaderboard (week + season) -->
-      <section class="card">
-        <div class="lbHeaderRow">
-          <h2 style="margin:0">Players Leaderboard — This Week</h2>
-          <div class="small muted">Only users with a pick this week</div>
-        </div>
-        <div id="playersLB"></div>
-
-        <div class="sep"></div>
-        <div class="lbHeaderRow">
-          <h2 style="margin:0">Players Leaderboard — Season to Date</h2>
-          <div class="small muted">Rank points (1st=10, 2nd=9, …, floor 0). Last week only counts after Mon 8am ET.</div>
-        </div>
-        <div id="playersSeasonLB"></div>
-
-        <div class="sep"></div>
-        <h3 style="margin:0 0 6px 0">Recent Scoring Plays</h3>
-        <div class="log" id="scoringLog"></div>
-      </section>
-    </div>
+  <section class="card" style="margin-top:16px">
+    <h3 style="margin:0 0 6px 0">Recent Scoring Plays</h3>
+    <div class="log" id="scoringLog"></div>
   </section>
 </main>
 
-<script>
-/* ======================= Config ======================= */
-const POLL_MS=15000, LB_POLL_MS=45000, SPREAD_LIMIT=30, TZ='America/New_York';
-const INCLUDE_UNKNOWN_SPREADS = true;
-const W={TD:3,FG:2,XP:0.5,TWO:1,YARD:0.05,FIRST_DOWN:0.5,SACK:2.5,TFL:1.5,INT:5.5,FR:5,DEF_TD_BONUS:3,SAFETY:6,STOP:2,ST_RETURN_TD:8,BLOCK:5,CLOSE_GAME:10,OVERTIME:15};
+<script type="module">
+// ---- Error surfacing so page never looks "empty"
+window.addEventListener('error', e=>{
+  const box=document.getElementById('err'); box.style.display='block';
+  box.textContent='JS Error: '+(e.error?.message||e.message);
+});
+window.addEventListener('unhandledrejection', e=>{
+  const box=document.getElementById('err'); box.style.display='block';
+  box.textContent='Promise Error: '+(e.reason?.message||e.reason);
+});
 
-/* ======================= DOM ======================= */
-const topBar=document.getElementById('topBar'), splash=document.getElementById('splash'), tracker=document.getElementById('tracker');
-const gamesGrid=document.getElementById('gamesGrid'), gridNote=document.getElementById('gridNote'), gameCount=document.getElementById('gameCount'), liveHeader=document.getElementById('liveHeader');
-const boardTeams=document.getElementById('boardTeams');
-const clockEl=document.getElementById('clock'), quarterEl=document.getElementById('quarter'), stateEl=document.getElementById('state');
-const scoreEl=document.getElementById('fantasyScore'), flowNotes=document.getElementById('flowNotes');
-const scoringLog=document.getElementById('scoringLog');
-const leaderboardCombined=document.getElementById('leaderboardCombined'), lbNote=document.getElementById('lbNote'), toggleAllBtn=document.getElementById('toggleAll');
-const playersPanel=document.getElementById('playersPanel'), playersLB=document.getElementById('playersLB'), playersSeasonLB=document.getElementById('playersSeasonLB');
-const newPlayerName=document.getElementById('newPlayerName'), addPlayerBtn=document.getElementById('addPlayerBtn'), clearWeekBtn=document.getElementById('clearWeekBtn');
-const errBox=document.getElementById('err');
-const topSelect=document.getElementById('setPickSelect'), setPickBtn=document.getElementById('setPickBtn');
+// ---- Config (force a Saturday by default so you ALWAYS see games)
+const DEBUG_FORCE_DATE = "2024-09-07"; // set "" to use today
+const SPREAD_LIMIT = 30;
+const POLL_MS = 15000, LB_POLL_MS = 45000;
 
-/* ======================= State ======================= */
-let pollTimer=null, lbTimer=null, selected=null, lastScoringIds=new Set();
-let showAll=false, lastLeaderboardRows=[];
-let players=[], picks={};
-const gameScoreCache=new Map(); // eventId -> {score,status,final:true}
-
-/* ======================= Utils ======================= */
-function showErr(msg){ errBox.textContent=msg; errBox.style.display='block'; }
-function hideErr(){ errBox.style.display='none'; }
-function timeout(ms){ return new Promise(r=>setTimeout(r,ms)); }
-async function safeFetch(url, opts={}, retries=2){
+const fmtDate = d => d.split('-').join('');
+const todayISO = () => DEBUG_FORCE_DATE || new Date().toISOString().slice(0,10);
+function timeout(ms){return new Promise(r=>setTimeout(r,ms))}
+async function safeFetch(url,opts={},retries=2){
   for(let i=0;i<=retries;i++){
     try{
       const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),12000);
@@ -215,24 +138,6 @@ async function safeFetch(url, opts={}, retries=2){
     }catch(e){ if(i===retries) throw e; await timeout(600*(i+1)); }
   }
 }
-const fmtDate=d=>d.split('-').join(''); const todayISO=()=>new Date().toISOString().slice(0,10);
-
-/* ---- week key (Mon 8am ET) ---- */
-function fmtParts(d,opts){return new Intl.DateTimeFormat('en-US',opts).formatToParts(d).reduce((o,p)=>{o[p.type]=p.value;return o;},{});}
-function nowEST(){return new Date(new Date().toLocaleString('en-US',{timeZone:TZ}));}
-function addDaysEST(d,days){const p=fmtParts(d,{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const base=new Date(`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`);base.setDate(base.getDate()+days);return new Date(base.toLocaleString('en-US',{timeZone:TZ}));}
-function weekKeyEST(){const n=nowEST(),wd=new Intl.DateTimeFormat('en-US',{timeZone:TZ,weekday:'short'}).format(n),idx={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6}[wd];const parts=fmtParts(n,{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});const daysSinceMon=(idx+6)%7;const thisMon=addDaysEST(n,-daysSinceMon);const isAfter8=Number(parts.hour)>=8||daysSinceMon>0;const mondayForKey=isAfter8?thisMon:addDaysEST(thisMon,-7);const k=fmtParts(mondayForKey,{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'});return `${k.year}-${k.month}-${k.day}-08ET`;}
-const WK=weekKeyEST();
-
-/* ---- storage ---- */
-const Store={
-  async loadPlayers(){return JSON.parse(localStorage.getItem('cfb.players')||'[]');},
-  async savePlayers(v){localStorage.setItem('cfb.players',JSON.stringify(v));},
-  async loadPicks(){return JSON.parse(localStorage.getItem('cfb.picks')||'{}');},
-  async savePicks(v){localStorage.setItem('cfb.picks',JSON.stringify(v));},
-};
-
-/* ---- ESPN ---- */
 const api={
   scoreboard:d=>safeFetch(`https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${fmtDate(d)}`),
   summary:id=>safeFetch(`https://site.api.espn.com/apis/site/v2/sports/football/college-football/summary?event=${id}`),
@@ -240,81 +145,32 @@ const api={
   pbp:id=>safeFetch(`https://cdn.espn.com/core/college-football/playbyplay?xhr=1&gameId=${id}`),
   oddsIndex:id=>safeFetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/events/${id}/competitions/${id}/odds`)
 };
-const cdnLogo=t=>t?.logos?.[0]?.href || (t?.id ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${t.id}.png` : null);
+const cdnLogo=t=>t?.logos?.[0]?.href || (t?.id?`https://a.espncdn.com/i/teamlogos/ncaa/500/${t.id}.png`:null);
 
-/* ======================= Players UI ======================= */
-function refreshTopBarPlayerSelect(){
-  if(!topSelect) return;
-  topSelect.innerHTML='';
-  (players||[]).forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; topSelect.appendChild(o); });
-}
-function renderPlayers(){
-  playersPanel.innerHTML='';
-  if(!players.length){ playersPanel.innerHTML='<div class="small muted">No players yet. Add some above.</div>'; refreshTopBarPlayerSelect(); return; }
-  players.forEach(p=>{
-    const wkPick=(picks[WK]||{})[p.id];
-    const div=document.createElement('div');
-    div.style.cssText='display:flex;justify-content:space-between;align-items:center;border:1px solid #1c2430;background:#0f1318;padding:8px;border-radius:10px;margin-bottom:8px';
-    div.innerHTML=`
-      <div>
-        <strong>${p.name}</strong>
-        <div class="small mono">${wkPick?`Pick: ${wkPick.gameId}`:'No pick yet'}</div>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button class="btn small" data-pick="${p.id}">Pick</button>
-        <button class="btn small" data-del="${p.id}">Del</button>
-      </div>`;
-    playersPanel.appendChild(div);
-  });
-  playersPanel.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
-    const id=b.dataset.del; players=players.filter(x=>x.id!==id);
-    Object.keys(picks||{}).forEach(week=>{ if(picks[week]) delete picks[week][id]; });
-    Store.savePlayers(players); Store.savePicks(picks);
-    renderPlayers(); renderPlayersLeaderboard(); renderPlayersSeasonLeaderboard();
-  });
-  playersPanel.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{
-    const id=b.dataset.pick;
-    document.querySelectorAll('.assignSelect').forEach(sel=>{ sel.value=id; sel.classList.add('pulse'); setTimeout(()=>sel.classList.remove('pulse'),800); });
-  });
-  refreshTopBarPlayerSelect();
-}
-addPlayerBtn.onclick=()=>{
-  const name=(newPlayerName.value||'').trim(); if(!name) return;
-  const id='p'+Math.random().toString(36).slice(2,9);
-  players.push({id,name}); newPlayerName.value='';
-  Store.savePlayers(players); renderPlayers(); renderPlayersLeaderboard(); renderPlayersSeasonLeaderboard();
-};
-clearWeekBtn.onclick=()=>{
-  picks[WK]={}; Store.savePicks(picks);
-  renderPlayers(); renderPlayersLeaderboard(); renderPlayersSeasonLeaderboard();
-};
+// ---- DOM refs
+const errBox=document.getElementById('err');
+const gamesGrid=document.getElementById('gamesGrid'), gameCount=document.getElementById('gameCount'), gridNote=document.getElementById('gridNote');
+const topBar=document.getElementById('topBar'), liveHeader=document.getElementById('liveHeader'), boardTeams=document.getElementById('boardTeams');
+const clockEl=document.getElementById('clock'), quarterEl=document.getElementById('quarter'), stateEl=document.getElementById('state');
+const scoreEl=document.getElementById('fantasyScore'), flowNotes=document.getElementById('flowNotes'), scoringLog=document.getElementById('scoringLog');
+const leaderboardCombined=document.getElementById('leaderboardCombined'), lbNote=document.getElementById('lbNote'), toggleAllBtn=document.getElementById('toggleAll');
 
-/* ---- assign helper ---- */
-function assignPick(playerId, game){
-  if(!picks[WK]) picks[WK]={};
-  picks[WK][playerId]={gameId:game.gameId, lockedAt:new Date().toISOString()};
-  Store.savePicks(picks);
-  renderPlayers(); renderPlayersLeaderboard(); renderPlayersSeasonLeaderboard();
-}
+let selected=null, lastScoringIds=new Set(), pollTimer=null, lbTimer=null, showAll=false, lastLeaderboardRows=[];
+const W={TD:3,FG:2,XP:0.5,TWO:1,YARD:0.05,FIRST_DOWN:0.5,SACK:2.5,TFL:1.5,INT:5.5,FR:5,DEF_TD_BONUS:3,SAFETY:6,STOP:2,ST_RETURN_TD:8,BLOCK:5,CLOSE_GAME:10,OVERTIME:15};
 
-/* ======================= Splash / Eligible games ======================= */
+// ---- Build slate
 async function loadEligibleGames(){
-  hideErr();
-  gamesGrid.innerHTML=''; gameCount.textContent='Loading…';
-  lastScoringIds.clear(); if(pollTimer) clearInterval(pollTimer); if(lbTimer) clearInterval(lbTimer);
-  scoreEl.textContent='—'; splash.style.display='block'; tracker.style.display='none'; topBar.style.display='none';
-
   try{
-    const sb=await api.scoreboard(todayISO());
-    const events=sb?.events||[];
-    if(!events.length){ gameCount.textContent='No games found for today.'; return; }
+    gamesGrid.innerHTML=''; gameCount.textContent='Loading…';
+    const sbRes=await api.scoreboard(todayISO()); const events=sbRes?.events||[];
+    if(!events.length){ gameCount.textContent='No games found for this date.'; return; }
 
     const base=events.map(e=>{
       const comp=e.competitions?.[0]||{}, cs=comp.competitors||[];
       const home=cs.find(c=>c.homeAway==='home')||{}, away=cs.find(c=>c.homeAway==='away')||{};
       return {gameId:e.id, competitionId:comp.id||e.id, start:e.date,
-        home:{name:home.team?.shortDisplayName||home.team?.displayName, id:home.team?.id, abbr:home.team?.abbreviation||'', logo:cdnLogo(home.team), color:home.team?.color},
-        away:{name:away.team?.shortDisplayName||away.team?.displayName, id:away.team?.id, abbr:away.team?.abbreviation||'', logo:cdnLogo(away.team), color:away.team?.color}};
+        home:{name:home.team?.shortDisplayName||home.team?.displayName, id:home.team?.id, logo:cdnLogo(home.team), color:home.team?.color},
+        away:{name:away.team?.shortDisplayName||away.team?.displayName, id:away.team?.id, logo:cdnLogo(away.team), color:away.team?.color}};
     });
 
     const withSpreads=await Promise.all(base.map(async g=>{
@@ -336,8 +192,9 @@ async function loadEligibleGames(){
       }catch{ return {...g, spread:null}; }
     }));
 
-    const eligible=withSpreads.filter(g=> g.spread==null ? INCLUDE_UNKNOWN_SPREADS : g.spread<=SPREAD_LIMIT);
-    gridNote.textContent=`Showing games with spread ≤ ${SPREAD_LIMIT}${INCLUDE_UNKNOWN_SPREADS?' (unknown spreads included)':''}.`;
+    const eligible=withSpreads.filter(g=> g.spread==null ? true : g.spread<=SPREAD_LIMIT);
+    gridNote.textContent=`Showing games with spread ≤ ${SPREAD_LIMIT} (unknown spreads included).`;
+    gameCount.textContent=`${eligible.length} game${eligible.length===1?'':'s'} loaded`;
 
     for(const g of eligible){
       const band=`linear-gradient(90deg, ${g.away.color? '#'+g.away.color : '#1a232d'} 0%, ${g.home.color? '#'+g.home.color : '#26313c'} 100%)`;
@@ -351,147 +208,46 @@ async function loadEligibleGames(){
             <div class="team" style="justify-content:flex-end">${g.home.logo?`<img src="${g.home.logo}" alt="">`:''}<div class="name">${g.home.name}</div></div>
           </div>
           <div class="small mono" style="margin-top:6px;opacity:.8">Spread: ${g.spread==null?'—':g.spread.toFixed(1)} · Kick: ${kickoff}</div>
-
-          <div class="lockRow">
-            <button class="lockBtn">🔒 Lock My View</button>
-          </div>
-
-          <div class="assignWrap" style="margin-top:8px">
-            <select class="assignSelect"><option value="">Assign to player…</option></select>
-            <button class="btn small assignBtn">Assign</button>
-          </div>
+          <div class="lockRow"><button class="lockBtn">View live</button></div>
         </div>`;
-      const sel=card.querySelector('.assignSelect');
-      (players||[]).forEach(p=>{ const opt=document.createElement('option'); opt.value=p.id; opt.textContent=p.name; sel.appendChild(opt); });
-
       card.querySelector('.lockBtn').addEventListener('click',()=>lockPick(g));
-
-      card.querySelector('.assignBtn').addEventListener('click',()=>{
-        const pid=sel.value; if(!pid) return;
-        assignPick(pid,g); sel.value='';
-      });
-
       gamesGrid.appendChild(card);
     }
-
-    gameCount.textContent=`${eligible.length} eligible game${eligible.length===1?'':'s'} loaded`;
-    renderPlayers();
-    const saved=JSON.parse(localStorage.getItem('lockedPick')||'null'); if(saved) lockPick(saved);
-  }catch(e){ console.error(e); showErr('Failed to load ESPN data.'); gameCount.textContent='Load failed.'; }
+  }catch(e){
+    console.error(e);
+    const box=document.getElementById('err'); box.style.display='block';
+    box.textContent='Failed to load ESPN scoreboard. See console.';
+  }
 }
 
-/* ======================= Lock & Top Bar ======================= */
-function lockPick(g){
-  selected=g; localStorage.setItem('lockedPick', JSON.stringify(g)); lastScoringIds.clear();
-  liveHeader.textContent=`${g.away.name} @ ${g.home.name}${g.spread!=null?` (spread ${g.spread.toFixed(1)})`:''}`;
-
-  const row=(side,color,id)=>`<div class="teamline" style="border-left:6px solid ${color? '#'+color : '#2a3643'}">
-      <div class="left">${side.logo?`<img src="${side.logo}" alt="">`:''}<div style="font-weight:700">${side.name}</div></div>
-      <div id="${id}" style="font-weight:800">—</div></div>`;
-  boardTeams.innerHTML=row(g.away,g.away.color,'awayScore') + row(g.home,g.home.color,'homeScore');
-
-  topBar.style.display='block'; splash.style.display='none'; tracker.style.display='block';
-  if(pollTimer) clearInterval(pollTimer); if(lbTimer) clearInterval(lbTimer);
-  refreshOnce(); pollTimer=setInterval(refreshOnce, POLL_MS);
-  refreshLeaderboardCombined(); lbTimer=setInterval(refreshLeaderboardCombined, LB_POLL_MS);
-
-  // Auto-assign on lock:
-  try{
-    if((players||[]).length){
-      const pid = (topSelect && topSelect.value) ? topSelect.value : players[0].id;
-      if(!picks[WK] || !picks[WK][pid]) assignPick(pid, g);
-    }
-  }catch{}
+// ---- Leaderboard (combined)
+const leaderboardCombined=document.getElementById('leaderboardCombined');
+function renderGameLeaderboard(){
+  leaderboardCombined.innerHTML='';
+  const rows=showAll?lastLeaderboardRows:lastLeaderboardRows.slice(0,10);
+  rows.forEach(r=>{
+    const div=document.createElement('div'); div.className='lbRow';
+    div.innerHTML=`
+      <div class="lbTeam">
+        ${r.awayLogo?`<img src="${r.awayLogo}" alt="">`:''}<span class="lbName">${r.awayName}</span>
+        <span class="scoreTag mono">${r.awayPts}</span>
+        <span class="lbSmall mono" style="margin:0 6px">at</span>
+        ${r.homeLogo?`<img src="${r.homeLogo}" alt="">`:''}<span class="lbName">${r.homeName}</span>
+        <span class="scoreTag mono">${r.homePts}</span>
+      </div>
+      <div class="lbPts mono">${r.score.toFixed(2)}</div>
+      <div class="lbMeta mono">${r.status}</div>`;
+    leaderboardCombined.appendChild(div);
+  });
+  toggleAllBtn.textContent=showAll?'Show top 10':'Show all';
+  toggleAllBtn.setAttribute('aria-expanded',String(showAll));
 }
+toggleAllBtn.addEventListener('click',()=>{showAll=!showAll; renderGameLeaderboard();});
 
-/* Manual "set as my pick" in top bar */
-setPickBtn.addEventListener('click',()=>{
-  if(!selected || !topSelect?.value) return;
-  assignPick(topSelect.value, selected);
-});
+const lbNote=document.getElementById('lbNote');
+const cdnLogoTeam=t=>t?.team?.logos?.[0]?.href || (t?.team?.id?`https://a.espncdn.com/i/teamlogos/ncaa/500/${t.team.id}.png`:null);
 
-/* ======================= Live refresh ======================= */
-async function refreshOnce(){
-  if(!selected) return;
-  try{
-    const [summary, box, pbp] = await Promise.all([api.summary(selected.gameId), api.box(selected.gameId), api.pbp(selected.gameId)]);
-    const comp=summary?.header?.competitions?.[0]||{}, status=comp.status||{};
-    const home=comp.competitors?.find(c=>c.homeAway==='home'); const away=comp.competitors?.find(c=>c.homeAway==='away');
-    const homeScore=Number(home?.score??0), awayScore=Number(away?.score??0);
-    const hs=document.getElementById('homeScore'), as=document.getElementById('awayScore');
-    if(hs) hs.textContent=homeScore; if(as) as.textContent=awayScore;
-
-    clockEl.textContent=status?.displayClock ?? '—';
-    quarterEl.textContent=status?.period ?? '-';
-    stateEl.textContent=status?.type?.description || status?.type?.shortDetail || '—';
-
-    let totals={yards:0,firstDowns:0,tfl:0,sacks:0,thirdMade:0,thirdAtt:0,fourthMade:0,fourthAtt:0,safeties:0};
-    function add(a,k,f){const s=a.find(s=>s.name===k||s.abbreviation===k);return s?f(s):0;}
-    for(const side of (summary?.boxscore?.teams||[])){
-      const st=side?.statistics||[];
-      const ry=add(st,'rushingYards', s=>Number(s.value??s.displayValue??0));
-      const py=add(st,'netPassingYards', s=>Number(s.value??s.displayValue??0));
-      totals.yards+=(ry||0)+(py||0);
-      totals.firstDowns+=add(st,'firstDowns', s=>Number(s.value??s.displayValue??0));
-      totals.sacks+=add(st,'sacks', s=>{const dv=(s.displayValue||'').split('-')[0];const n=Number(s.value??dv);return isNaN(n)?Number(dv)||0:n;});
-      totals.tfl+=add(st,'tacklesForLoss', s=>Number(s.value??s.displayValue??0));
-      const th=add(st,'thirdDownEff', s=>(s.displayValue||'0-0')); const [tm,ta]=String(th).split('-').map(x=>Number(x)||0); totals.thirdMade+=tm; totals.thirdAtt+=ta;
-      const fh=add(st,'fourthDownEff', s=>(s.displayValue||'0-0')); const [fm,fa]=String(fh).split('-').map(x=>Number(x)||0); totals.fourthMade+=fm; totals.fourthAtt+=fa;
-      totals.safeties += add(st,'safeties', s=>Number(s.value??s.displayValue??0));
-    }
-    const stopsFromEff=(totals.thirdAtt-totals.thirdMade)+(totals.fourthAtt-totals.fourthMade);
-
-    let TD=0,FG=0,XP=0,TWO=0,stReturnTD=0,blocks=0,defTdBonus=0,safeties=(totals.safeties||0),newLog=[];
-    const scoringPlays=summary?.scoringPlays||[];
-    for(const sp of scoringPlays){
-      if(!lastScoringIds.has(sp.id)){const desc=sp.text||sp.description||'',time=sp.clock?.displayValue||'',q=sp.period?.number?`Q${sp.period.number}`:'';newLog.push(`[${q} ${time}] ${desc}`);}
-      const d=(sp.text||sp.description||'').toLowerCase(), t=(sp.type?.text||sp.scoringType||'').toLowerCase();
-      if(t.includes('touchdown')||d.includes('touchdown')){TD++; if(d.includes('punt return')||d.includes('kickoff return')||d.includes('kick return')) stReturnTD++; if(d.includes('interception return')||d.includes('fumble return')||d.includes('blocked punt')||d.includes('blocked kick')||d.includes('fumble recovered in end zone')) defTdBonus++; if(d.includes('safety')) safeties++;}
-      else if(t.includes('field goal')||d.includes('field goal')) FG++;
-      else if(t.includes('extra point')||d.includes('extra point is good')) XP++;
-      else if(t.includes('two-point')||d.includes('two-point')){ if(d.includes('successful')||d.includes('is good')||d.includes('good')) TWO++; }
-      if(d.includes('blocked')) blocks++;
-    }
-    for(const l of newLog.reverse()){const div=document.createElement('div'); div.textContent=l; scoringLog.prepend(div);} scoringPlays.forEach(sp=>lastScoringIds.add(sp.id));
-
-    let pbpPlays=[]; try{const gp=pbp?.gamepackageJSON; const collect=a=>{if(Array.isArray(a)) a.forEach(d=>{if(Array.isArray(d.plays)) pbpPlays.push(...d.plays);});}; collect(gp?.drives?.previous); collect(gp?.drives?.current);}catch{}
-    let sacksP=0,tflP=0,stopsP=0,fdP=0,intP=0,frP=0,defTDP=0,stTDP=stReturnTD,safetyP=0,blockP=blocks;
-    for(const p of pbpPlays){
-      const t=(p?.text||'').toLowerCase(); if(t.includes('sacked')) sacksP++; if(t.includes('tackle for loss')) tflP++;
-      const dn=p.down, gotFirst=t.includes('first down')||/1st and/i.test(t), tod=t.includes('turnover on downs'), punt=t.startsWith('punt'), fg=(t.includes('field goal')&&(t.includes('is good')||t.includes('missed')||t.includes('blocked')));
-      if((dn===3||dn===4)&&!gotFirst&&(tod||punt||fg)) stopsP++;
-      if(t.includes('first down')) fdP++;
-      if(t.includes('intercepted')){intP++; if(t.includes('for a touchdown')) defTDP++;}
-      if(t.includes('fumble')){if(t.includes('recovered')) frP++; if(t.includes('for a touchdown')||t.includes('recovered in end zone')) defTDP++;}
-      if((t.includes('punt')||t.includes('kickoff')||t.includes('kick return'))&&t.includes('returns')&&t.includes('for a touchdown')) stTDP++;
-      if(t.includes('safety')) safetyP++;
-      if(t.includes('blocked punt')||t.includes('blocked field goal')||(t.includes('blocked')&&t.includes('kick'))) blockP++;
-    }
-    if(!totals.sacks || totals.sacks<sacksP) totals.sacks=sacksP;
-    if(!totals.tfl   || totals.tfl<tflP)     totals.tfl=tflP;
-    if(!totals.firstDowns) totals.firstDowns=fdP;
-
-    const stops=Math.max(stopsFromEff,stopsP);
-    const INT=intP, FR=frP, defTDB=defTDP, stTDB=Math.max(stReturnTD,stTDP), safetiesF=Math.max(safeties,safetyP,totals.safeties||0), blocksF=Math.max(blocks,blockP);
-    let xpP=0,twoP=0; for(const p of pbpPlays){const t=(p.text||'').toLowerCase(); if(t.includes('extra point')&&(t.includes('good')||t.includes('is good'))) xpP++; if(t.includes('two-point')&&(t.includes('successful')||t.includes('good'))) twoP++;}
-    const XPf=Math.max(XP,xpP), TWOf=Math.max(TWO,twoP);
-
-    const offensePts=TD*W.TD+FG*W.FG+XPf*W.XP+TWOf*W.TWO+totals.yards*W.YARD+totals.firstDowns*W.FIRST_DOWN;
-    const defensePts=totals.sacks*W.SACK+totals.tfl*W.TFL+INT*W.INT+FR*W.FR+defTDB*W.DEF_TD_BONUS+safetiesF*W.SAFETY+stops*W.STOP;
-
-    const isFinal=(status?.type?.state==='post'||status?.type?.completed===true), margin=Math.abs(homeScore-awayScore);
-    const closeBonus=(isFinal && margin<=7)?W.CLOSE_GAME:0, otBonus=((status?.period||0)>4 && isFinal)?W.OVERTIME:0;
-    const totalScore=offensePts+defensePts+closeBonus+otBonus;
-
-    scoreEl.textContent=totalScore.toFixed(2);
-    flowNotes.textContent=`Close game: ${closeBonus?'Yes (+10)':'No'}, OT: ${otBonus?'Yes (+15)':'No'}`;
-  }catch(e){ console.error(e); showErr('Live refresh failed. Retrying…'); }
-}
-
-/* ======================= Leaderboards ======================= */
 async function computeFantasyForGame(eventId){
-  const cached=gameScoreCache.get(eventId);
-  if(cached && cached.final) return cached;
   try{
     const [summary,box,pbp]=await Promise.all([api.summary(eventId),api.box(eventId),api.pbp(eventId)]);
     const comp=summary?.header?.competitions?.[0]||{}, status=comp.status||{};
@@ -499,10 +255,7 @@ async function computeFantasyForGame(eventId){
     const homeName=home?.team?.shortDisplayName||home?.team?.displayName||'Home';
     const awayName=away?.team?.shortDisplayName||away?.team?.displayName||'Away';
     const homeLogo=cdnLogo(home?.team), awayLogo=cdnLogo(away?.team);
-
-    // live/final scoreboard points
-    const homePts=Number(home?.score ?? 0);
-    const awayPts=Number(away?.score ?? 0);
+    const homePts=Number(home?.score ?? 0), awayPts=Number(away?.score ?? 0);
 
     let totals={yards:0,firstDowns:0,tfl:0,sacks:0,thirdMade:0,thirdAtt:0,fourthMade:0,fourthAtt:0,safeties:0};
     function add(a,k,f){const s=a.find(s=>s.name===k||s.abbreviation===k);return s?f(s):0;}
@@ -514,7 +267,7 @@ async function computeFantasyForGame(eventId){
       totals.tfl+=add(st,'tacklesForLoss', s=>Number(s.value??s.displayValue??0));
       const th=add(st,'thirdDownEff', s=>(s.displayValue||'0-0')); const [tm,ta]=String(th).split('-').map(x=>Number(x)||0); totals.thirdMade+=tm; totals.thirdAtt+=ta;
       const fh=add(st,'fourthDownEff', s=>(s.displayValue||'0-0')); const [fm,fa]=String(fh).split('-').map(x=>Number(x)||0); totals.fourthMade+=fm; totals.fourthAtt+=fa;
-      totals.safeties += add(st,'safeties', s=>Number(s.value??s.displayValue??0));
+      totals.safeties += add(st,'safeties', s=>Number(s.value??s.displayValue||0));
     }
     const stopsFromEff=(totals.thirdAtt-totals.thirdMade)+(totals.fourthAtt-totals.fourthMade);
 
@@ -529,10 +282,12 @@ async function computeFantasyForGame(eventId){
       if(d.includes('blocked')) blocks++;
     }
 
+    // PBP light parse for sacks/stops/etc
     let pbpPlays=[]; try{const gp=pbp?.gamepackageJSON; const collect=a=>{if(Array.isArray(a)) a.forEach(d=>{if(Array.isArray(d.plays)) pbpPlays.push(...d.plays);});}; collect(gp?.drives?.previous); collect(gp?.drives?.current);}catch{}
     let sacksP=0,tflP=0,stopsP=0,fdP=0,intP=0,frP=0,defTDP=0,stTDP=stReturnTD,safetyP=0,blockP=blocks;
     for(const p of pbpPlays){
-      const t=(p?.text||'').toLowerCase(); if(t.includes('sacked')) sacksP++; if(t.includes('tackle for loss')) tflP++;
+      const t=(p?.text||'').toLowerCase();
+      if(t.includes('sacked')) sacksP++; if(t.includes('tackle for loss')) tflP++;
       const dn=p.down, gotFirst=t.includes('first down')||/1st and/i.test(t), tod=t.includes('turnover on downs'), punt=t.startsWith('punt'), fg=(t.includes('field goal')&&(t.includes('is good')||t.includes('missed')||t.includes('blocked')));
       if((dn===3||dn===4)&&!gotFirst&&(tod||punt||fg)) stopsP++;
       if(t.includes('first down')) fdP++;
@@ -548,156 +303,79 @@ async function computeFantasyForGame(eventId){
 
     const stops=Math.max(stopsFromEff,stopsP);
     const INT=intP, FR=frP, defTDB=defTDP, stTDB=Math.max(stReturnTD,stTDP), safetiesF=Math.max(safeties,safetyP,totals.safeties||0), blocksF=Math.max(blocks,blockP);
-
     let xpP=0,twoP=0; for(const p of pbpPlays){const t=(p.text||'').toLowerCase(); if(t.includes('extra point')&&(t.includes('good')||t.includes('is good'))) xpP++; if(t.includes('two-point')&&(t.includes('successful')||t.includes('good'))) twoP++;}
     const XPf=Math.max(XP,xpP), TWOf=Math.max(TWO,twoP);
 
     const offensePts=TD*W.TD+FG*W.FG+XPf*W.XP+TWOf*W.TWO+totals.yards*W.YARD+totals.firstDowns*W.FIRST_DOWN;
     const defensePts=totals.sacks*W.SACK+totals.tfl*W.TFL+INT*W.INT+FR*W.FR+defTDB*W.DEF_TD_BONUS+safetiesF*W.SAFETY+stops*W.STOP;
-    const score=Number((offensePts+defensePts).toFixed(2));
-
     const isFinal=(status?.type?.state==='post'||status?.type?.completed===true);
-    const row={
-      homeName, awayName, homeLogo, awayLogo,
-      homePts, awayPts,
-      score,
-      status: status?.type?.shortDetail || '—',
-      final: isFinal
-    };
-    if(isFinal) gameScoreCache.set(eventId,row);
-    return row;
-  }catch(e){ console.error(e); return null; }
+    const margin=Math.abs(homePts-awayPts);
+    const closeBonus=(isFinal && margin<=7)?W.CLOSE_GAME:0, otBonus=((status?.period||0)>4 && isFinal)?W.OVERTIME:0;
+    const score=Number((offensePts+defensePts+closeBonus+otBonus).toFixed(2));
+
+    return {awayName,homeName,awayLogo,homeLogo,awayPts,homePts,score,status:status?.type?.shortDetail||'—',final:isFinal};
+  }catch(e){ console.error('computeFantasyForGame failed',e); return null; }
 }
 
-function renderGameLeaderboard(){
-  leaderboardCombined.innerHTML='';
-  if(!lastLeaderboardRows.length){leaderboardCombined.innerHTML='<div class="small muted">—</div>'; return;}
-  const rows=showAll?lastLeaderboardRows:lastLeaderboardRows.slice(0,10);
-  rows.forEach(r=>{
-    const div=document.createElement('div'); div.className='lbRow';
-    div.innerHTML=`
-      <div class="lbTeam">
-        ${r.awayLogo ? `<img src="${r.awayLogo}" alt="">` : ''}<span class="lbName">${r.awayName}</span>
-        <span class="scoreTag mono">${r.awayPts}</span>
-        <span class="lbSmall mono" style="margin:0 6px">at</span>
-        ${r.homeLogo ? `<img src="${r.homeLogo}" alt="">` : ''}<span class="lbName">${r.homeName}</span>
-        <span class="scoreTag mono">${r.homePts}</span>
-      </div>
-      <div class="lbPts mono">${r.score.toFixed(2)}</div>
-      <div class="lbMeta mono">${r.status}</div>
-    `;
-    leaderboardCombined.appendChild(div);
-  });
-  toggleAllBtn.textContent=showAll?'Show top 10':'Show all';
-  toggleAllBtn.setAttribute('aria-expanded',String(showAll));
-}
 async function refreshLeaderboardCombined(){
   try{
-    leaderboardCombined.innerHTML='<div class="small muted">Loading…</div>';
-    const sb=await api.scoreboard(todayISO()); const events=sb?.events||[];
-    lbNote.textContent=`${events.length} game${events.length===1?'':'s'} on today’s board (auto-refreshing).`;
+    leaderboardCombined.innerHTML='<div class="small" style="color:#8ea0b3">Loading…</div>';
+    const sbRes=await api.scoreboard(todayISO()); const events=sbRes?.events||[];
+    lbNote.textContent=`${events.length} game${events.length===1?'':'s'} on this board.`;
     const rows=(await Promise.all(events.map(e=>computeFantasyForGame(e.id)))).filter(Boolean);
     rows.sort((a,b)=>b.score-a.score); lastLeaderboardRows=rows; renderGameLeaderboard();
-  }catch(e){ console.error(e); showErr('Leaderboard load failed.'); }
+  }catch(e){ console.error(e); lbNote.textContent='Leaderboard load failed.'; }
 }
 
-/* ======================= Weekly & Season (rank points) ======================= */
-async function weeklyRankPoints(weekKey){
-  const wk=picks?.[weekKey]||{}; const pickedIds=Object.keys(wk); if(!pickedIds.length) return {};
-  const rows=await Promise.all(pickedIds.map(async pid=>{
-    const row=await computeFantasyForGame(wk[pid].gameId); return {pid, score: row?.score ?? 0};
-  }));
-  rows.sort((a,b)=>b.score-a.score);
-  const points={}; rows.forEach((r,i)=>{ points[r.pid]=Math.max(10-i,0); });
-  return points;
+// ---- Select a game to “view live”
+function lockPick(g){
+  selected=g;
+  lastScoringIds.clear();
+  liveHeader.textContent=`${g.away.name} @ ${g.home.name}${g.spread!=null?` (spread ${g.spread.toFixed(1)})`:''}`;
+  const row=(side,color,id)=>`<div class="teamline" style="border-left:6px solid ${color? '#'+color : '#2a3643'}"><div class="left">${side.logo?`<img src="${side.logo}" alt="">`:''}<div style="font-weight:700">${side.name}</div></div><div id="${id}" style="font-weight:800">—</div></div>`;
+  boardTeams.innerHTML=row(g.away,g.away.color,'awayScore')+row(g.home,g.home.color,'homeScore');
+  topBar.style.display='block';
+  if(pollTimer) clearInterval(pollTimer);
+  refreshOnce(); pollTimer=setInterval(refreshOnce,POLL_MS);
 }
 
-// Only include weeks BEFORE the current Mon 8am ET week key
-async function seasonRankTotals(){
-  const currentKey=weekKeyEST();
-  const weeks=Object.keys(picks||{}).filter(wk=>wk<currentKey).sort();
-  const totals=new Map();
-  (players||[]).forEach(p=>totals.set(p.id,0));
-  for(const wk of weeks){
-    const pts=await weeklyRankPoints(wk);
-    for(const [pid,v] of Object.entries(pts)){
-      totals.set(pid,(totals.get(pid)||0)+v);
-    }
-  }
-  return totals;
-}
-
-async function renderPlayersLeaderboard(){
-  if(!picks[WK]) picks[WK]={};
-  const wk=picks[WK];
-  const pickedPlayers=(players||[]).filter(p=>wk[p.id]);
-  const rows=await Promise.all(pickedPlayers.map(async p=>{
-    const row=await computeFantasyForGame(wk[p.id].gameId);
-    return {name:p.name,label: row?`${row.awayName} at ${row.homeName}`:wk[p.id].gameId,status:row?.status||'—',score:row?.score??0};
-  }));
-  rows.sort((a,b)=>b.score-a.score);
-  playersLB.innerHTML='';
-  if(!rows.length){ playersLB.innerHTML='<div class="small muted">No picks this week yet.</div>'; return; }
-  rows.forEach(r=>{
-    const div=document.createElement('div'); div.className='lbRow';
-    div.innerHTML=`<div class="lbTeam"><span class="lbName">${r.name}</span><span class="lbSmall mono" style="margin-left:8px">${r.label}</span></div><div class="lbPts mono">${r.score.toFixed(2)}</div><div class="lbMeta mono">${r.status}</div>`;
-    playersLB.appendChild(div);
-  });
-}
-async function renderPlayersSeasonLeaderboard(){
-  const totals=await seasonRankTotals();
-  const weeks=Object.keys(picks||{}); const hasAnyPick=pid=>weeks.some(wk=>picks[wk]?.[pid]);
-  const rows=(players||[]).filter(p=>hasAnyPick(p.id)).map(p=>({name:p.name,total:totals.get(p.id)||0})).sort((a,b)=>b.total-a.total);
-  playersSeasonLB.innerHTML='';
-  if(!rows.length){ playersSeasonLB.innerHTML='<div class="small muted">No season data yet — make some picks.</div>'; return; }
-  rows.forEach(r=>{
-    const div=document.createElement('div'); div.className='lbRow';
-    div.innerHTML=`<div class="lbTeam"><span class="lbName">${r.name}</span></div><div class="lbPts mono">${r.total}</div><div class="lbMeta mono">Season pts</div>`;
-    playersSeasonLB.appendChild(div);
-  });
-}
-
-/* ======================= Events & Boot ======================= */
-toggleAllBtn.addEventListener('click',()=>{ showAll=!showAll; renderGameLeaderboard(); });
-
-(async function boot(){
+async function refreshOnce(){
+  if(!selected) return;
   try{
-    const last=localStorage.getItem('weekKey'); const key=weekKeyEST();
-    if(last!==key){ localStorage.setItem('weekKey', key); }
-    players=await Store.loadPlayers();
-    picks=await Store.loadPicks();
-    if(!picks[WK]) picks[WK]={};
-    await Store.savePicks(picks);
+    const [summary,box,pbp]=await Promise.all([api.summary(selected.gameId),api.box(selected.gameId),api.pbp(selected.gameId)]);
+    const comp=summary?.header?.competitions?.[0]||{}, status=comp.status||{};
+    const home=comp.competitors?.find(c=>c.homeAway==='home'); const away=comp.competitors?.find(c=>c.homeAway==='away');
+    const homeScore=Number(home?.score??0), awayScore=Number(away?.score??0);
+    document.getElementById('homeScore').textContent=homeScore;
+    document.getElementById('awayScore').textContent=awayScore;
+    clockEl.textContent=status?.displayClock ?? '—';
+    quarterEl.textContent=status?.period ?? '-';
+    stateEl.textContent=status?.type?.description || status?.type?.shortDetail || '—';
 
-    refreshTopBarPlayerSelect();
-    await loadEligibleGames();
-    renderPlayersLeaderboard();
-    renderPlayersSeasonLeaderboard();
-    setInterval(renderPlayersLeaderboard, LB_POLL_MS);
-    setInterval(renderPlayersSeasonLeaderboard, LB_POLL_MS*2);
-  }catch(e){ console.error(e); showErr('Boot failed. Try refresh.'); }
+    // (Use same scoring as leaderboard)
+    const row=await computeFantasyForGame(selected.gameId);
+    if(row){ scoreEl.textContent=row.score.toFixed(2); flowNotes.textContent=row.final?`Final • ${row.status}`:row.status; }
+
+    // new scoring lines
+    const scoringPlays=summary?.scoringPlays||[]; let newLog=[];
+    for(const sp of scoringPlays){
+      if(!lastScoringIds.has(sp.id)){
+        const desc=sp.text||sp.description||'',time=sp.clock?.displayValue||'',q=sp.period?.number?`Q${sp.period.number}`:''; newLog.push(`[${q} ${time}] ${desc}`);
+      }
+    }
+    for(const l of newLog.reverse()){const div=document.createElement('div'); div.textContent=l; scoringLog.prepend(div);}
+    scoringPlays.forEach(sp=>lastScoringIds.add(sp.id));
+  }catch(e){
+    console.error(e);
+  }
+}
+
+// ---- Boot
+(async function boot(){
+  await loadEligibleGames();
+  refreshLeaderboardCombined();
+  lbTimer=setInterval(refreshLeaderboardCombined,LB_POLL_MS);
 })();
 </script>
-<script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-  window.sb = createClient(
-    'https://towmmcptefchtvhnxldt.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvd21tY3B0ZWZjaHR2aG54bGR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxOTQ5OTAsImV4cCI6MjA3Mjc3MDk5MH0.80HaZ2yvtAXNnYaQeb7r2dRtM7O7RpaaxwP1jNtHUPY'
-  );
-  console.log('Supabase ready');
-  // Step 2: simple sign-in with magic link
-document.getElementById('signinBtn').addEventListener('click', async ()=>{
-  const email = document.getElementById('emailInput').value.trim();
-  if(!email) return alert('Enter your email');
-  const { error } = await sb.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: window.location.href }
-  });
-  if(error) return alert('Error: ' + error.message);
-  alert('Magic link sent. Check your inbox.');
-});
-
-</script>
-
 </body>
 </html>
