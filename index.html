@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>CFB Game Fantasy — Safe Mode</title>
+<title>CFB Game Fantasy — Online</title>
 <style>
 :root{--bg:#0b0d10;--card:#12161b;--muted:#8ea0b3;--text:#e8eef4}
 html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
@@ -20,6 +20,12 @@ main{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
 .mono{font-family:ui-monospace, Menlo, Consolas, monospace}
 .btn{background:#14202b;border:1px solid #243241;color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer;font-size:13px}
 .btn.small{padding:6px 8px;font-size:12px}
+
+/* Auth */
+#authBar{padding:10px 20px;background:#0f1318;border-bottom:1px solid #1e242c;display:flex;gap:8px;align-items:center}
+#authBar input{background:#0b1117;border:1px solid #1b2633;border-radius:8px;color:#e8eef4;padding:6px 8px}
+
+/* Slate + cards */
 .gamesGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .gameCard{background:#11171e;border:1px solid #1f2a36;border-radius:14px;overflow:hidden}
 .band{height:6px}
@@ -30,6 +36,8 @@ main{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
 .team .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lockRow{display:flex;gap:8px;margin-top:10px}
 .lockBtn{flex:1;background:#14202b;border:1px solid #243241;border-radius:10px;color:var(--text);padding:10px 12px;cursor:pointer}
+
+/* Top bar */
 #topBar{display:none;margin-bottom:16px}
 .topGrid{display:grid;grid-template-columns:1fr 260px 260px;gap:14px;align-items:start}
 @media(max-width:980px){.topGrid{grid-template-columns:1fr}}
@@ -41,9 +49,13 @@ main{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
 .scoreBox{text-align:center}
 .scoreBox .label{display:inline-block;margin-bottom:6px;border:1px solid #26313c;border-radius:999px;padding:4px 8px;color:#8ea0b3;font-size:12px}
 .scoreBox .num{font-size:42px;font-weight:900}
+
+/* Layout below */
 .contentGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:1060px){.contentGrid{grid-template-columns:1fr}}
 .log{max-height:260px;overflow:auto;background:#0f1318;border-radius:10px;padding:8px;border:1px solid #1b232d}
+
+/* Leaderboards */
 .lbHeaderRow{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .lbRow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px;border-radius:10px;border:1px solid #1c2430;background:#0f1318;margin-bottom:8px}
 .lbTeam{display:flex;gap:8px;align-items:center;min-width:0}
@@ -57,12 +69,21 @@ main{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
 </head>
 <body>
 <header>
-  <h1>CFB Game Fantasy — Safe Mode <span class="sub">always renders (debug date enabled)</span></h1>
+  <h1>CFB Game Fantasy — Online <span class="sub">live scoring • weekly reset Mon 8am ET</span></h1>
 </header>
+
+<!-- Auth bar -->
+<div id="authBar">
+  <span id="whoami" class="small">Not signed in</span>
+  <input id="emailInput" type="email" placeholder="you@example.com">
+  <button id="signinBtn" class="btn small">Send magic link</button>
+  <button id="signoutBtn" class="btn small" style="display:none">Sign out</button>
+</div>
 
 <main>
   <div id="err" class="err"></div>
 
+  <!-- Live header -->
   <section id="topBar" class="card">
     <div id="liveHeader" class="small" style="margin-bottom:6px">—</div>
     <div class="topGrid">
@@ -87,30 +108,41 @@ main{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
     </div>
   </section>
 
-  <section class="card">
-    <div class="lbHeaderRow">
-      <h2 style="margin:0">Leaderboard — Games (Top 10)</h2>
-      <button id="toggleAll" class="btn" aria-expanded="false">Show all</button>
-    </div>
-    <div class="small" id="lbNote" style="color:#8ea0b3">Loading…</div>
-    <div id="leaderboardCombined"></div>
+  <!-- Boards -->
+  <section class="contentGrid">
+    <section class="card">
+      <div class="lbHeaderRow">
+        <h2 style="margin:0">Leaderboard — Games Today (Top 10)</h2>
+        <button id="toggleAll" class="btn" aria-expanded="false">Show all</button>
+      </div>
+      <div class="small" id="lbNote" style="color:#8ea0b3">Loading…</div>
+      <div id="leaderboardCombined"></div>
+    </section>
+
+    <section class="card">
+      <div class="lbHeaderRow">
+        <h2 style="margin:0">Players Leaderboard — This Week</h2>
+        <div class="small" style="color:#8ea0b3">Sign in, lock a game; shows all users’ picks</div>
+      </div>
+      <div id="playersLB"></div>
+
+      <div class="sep"></div>
+      <h3 style="margin:0 0 6px 0">Recent Scoring Plays (selected game)</h3>
+      <div class="log" id="scoringLog"></div>
+    </section>
   </section>
 
+  <!-- Slate -->
   <section class="card" style="margin-top:16px">
     <div class="small" id="gameCount">Loading today’s slate…</div>
     <div class="sep"></div>
     <div id="gridNote" class="small" style="margin-bottom:8px;color:#8ea0b3">Showing games with spread ≤ 30 (unknown spreads included).</div>
     <div id="gamesGrid" class="gamesGrid"></div>
   </section>
-
-  <section class="card" style="margin-top:16px">
-    <h3 style="margin:0 0 6px 0">Recent Scoring Plays</h3>
-    <div class="log" id="scoringLog"></div>
-  </section>
 </main>
 
 <script type="module">
-// ---- Error surfacing so page never looks "empty"
+/* ---------- Error surfacing ---------- */
 window.addEventListener('error', e=>{
   const box=document.getElementById('err'); box.style.display='block';
   box.textContent='JS Error: '+(e.error?.message||e.message);
@@ -120,13 +152,36 @@ window.addEventListener('unhandledrejection', e=>{
   box.textContent='Promise Error: '+(e.reason?.message||e.reason);
 });
 
-// ---- Config (force a Saturday by default so you ALWAYS see games)
-const DEBUG_FORCE_DATE = "2024-09-07"; // set "" to use today
+/* ---------- Config ---------- */
+const DEBUG_FORCE_DATE = ""; // e.g. "2024-09-07" to demo
 const SPREAD_LIMIT = 30;
 const POLL_MS = 15000, LB_POLL_MS = 45000;
+const TZ='America/New_York';
+const W={TD:3,FG:2,XP:0.5,TWO:1,YARD:0.05,FIRST_DOWN:0.5,SACK:2.5,TFL:1.5,INT:5.5,FR:5,DEF_TD_BONUS:3,SAFETY:6,STOP:2,ST_RETURN_TD:8,BLOCK:5,CLOSE_GAME:10,OVERTIME:15};
 
+/* ---------- Supabase (your project) ---------- */
+import { createClient } from 'https://esm.sh/v135/@supabase/supabase-js@2';
+const SUPABASE_URL='https://towmmcptefchtvhnxldt.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvd21tY3B0ZWZjaHR2aG54bGR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxOTQ5OTAsImV4cCI6MjA3Mjc3MDk5MH0.80HaZ2yvtAXNnYaQeb7r2dRtM7O7RpaaxwP1jNtHUPY';
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+/* ---------- Date helpers ---------- */
 const fmtDate = d => d.split('-').join('');
 const todayISO = () => DEBUG_FORCE_DATE || new Date().toISOString().slice(0,10);
+function nowEST(){return new Date(new Date().toLocaleString('en-US',{timeZone:TZ}))}
+function addDaysEST(d,days){const base=new Date(d); base.setDate(base.getDate()+days); return base}
+function weekKeyEST(){
+  const n=nowEST(); const wd=n.getDay(); // 0=Sun .. 6=Sat
+  const daysSinceMon=(wd+6)%7;
+  const mon=new Date(n); mon.setDate(n.getDate()-daysSinceMon);
+  const after8 = n.getHours()>=8 || daysSinceMon>0;
+  const start = after8?mon:addDaysEST(mon,-7);
+  const y=start.getFullYear(), m=String(start.getMonth()+1).padStart(2,'0'), d=String(start.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}-08ET`;
+}
+const WK=weekKeyEST();
+
+/* ---------- Fetch helpers ---------- */
 function timeout(ms){return new Promise(r=>setTimeout(r,ms))}
 async function safeFetch(url,opts={},retries=2){
   for(let i=0;i<=retries;i++){
@@ -147,24 +202,50 @@ const api={
 };
 const cdnLogo=t=>t?.logos?.[0]?.href || (t?.id?`https://a.espncdn.com/i/teamlogos/ncaa/500/${t.id}.png`:null);
 
-// ---- DOM refs
+/* ---------- DOM refs ---------- */
 const errBox=document.getElementById('err');
 const gamesGrid=document.getElementById('gamesGrid'), gameCount=document.getElementById('gameCount'), gridNote=document.getElementById('gridNote');
 const topBar=document.getElementById('topBar'), liveHeader=document.getElementById('liveHeader'), boardTeams=document.getElementById('boardTeams');
 const clockEl=document.getElementById('clock'), quarterEl=document.getElementById('quarter'), stateEl=document.getElementById('state');
 const scoreEl=document.getElementById('fantasyScore'), flowNotes=document.getElementById('flowNotes'), scoringLog=document.getElementById('scoringLog');
 const leaderboardCombined=document.getElementById('leaderboardCombined'), lbNote=document.getElementById('lbNote'), toggleAllBtn=document.getElementById('toggleAll');
+const whoEl=document.getElementById('whoami'), emailEl=document.getElementById('emailInput'), signInBtn=document.getElementById('signinBtn'), signOutBtn=document.getElementById('signoutBtn');
 
+/* ---------- Auth UI ---------- */
+signInBtn.onclick = async ()=>{
+  const email=(emailEl.value||'').trim(); if(!email) return alert('Enter your email');
+  const {error}=await sb.auth.signInWithOtp({email, options:{emailRedirectTo:window.location.href}});
+  if(error) alert(error.message); else alert('Magic link sent.');
+};
+signOutBtn.onclick = async ()=>{ await sb.auth.signOut(); refreshAuthUI(); };
+sb.auth.onAuthStateChange(refreshAuthUI);
+
+async function ensureProfile(user){
+  const display_name=user.user_metadata?.full_name||user.email?.split('@')[0]||'User';
+  await sb.from('profiles').upsert({id:user.id,display_name});
+}
+async function refreshAuthUI(){
+  const {data:{user}}=await sb.auth.getUser();
+  if(user){
+    whoEl.textContent=`Signed in as ${user.email}`; emailEl.style.display='none'; signInBtn.style.display='none'; signOutBtn.style.display='inline-block';
+    await ensureProfile(user);
+    await renderPlayersWeeklyFromDB();
+  }else{
+    whoEl.textContent='Not signed in'; emailEl.style.display='inline-block'; signInBtn.style.display='inline-block'; signOutBtn.style.display='none';
+  }
+}
+async function currentUserId(){const {data:{user}}=await sb.auth.getUser(); return user?.id||null;}
+
+/* ---------- App state ---------- */
 let selected=null, lastScoringIds=new Set(), pollTimer=null, lbTimer=null, showAll=false, lastLeaderboardRows=[];
-const W={TD:3,FG:2,XP:0.5,TWO:1,YARD:0.05,FIRST_DOWN:0.5,SACK:2.5,TFL:1.5,INT:5.5,FR:5,DEF_TD_BONUS:3,SAFETY:6,STOP:2,ST_RETURN_TD:8,BLOCK:5,CLOSE_GAME:10,OVERTIME:15};
+const gameScoreCache=new Map();
 
-// ---- Build slate
+/* ---------- Slate ---------- */
 async function loadEligibleGames(){
   try{
     gamesGrid.innerHTML=''; gameCount.textContent='Loading…';
     const sbRes=await api.scoreboard(todayISO()); const events=sbRes?.events||[];
     if(!events.length){ gameCount.textContent='No games found for this date.'; return; }
-
     const base=events.map(e=>{
       const comp=e.competitions?.[0]||{}, cs=comp.competitors||[];
       const home=cs.find(c=>c.homeAway==='home')||{}, away=cs.find(c=>c.homeAway==='away')||{};
@@ -172,15 +253,13 @@ async function loadEligibleGames(){
         home:{name:home.team?.shortDisplayName||home.team?.displayName, id:home.team?.id, logo:cdnLogo(home.team), color:home.team?.color},
         away:{name:away.team?.shortDisplayName||away.team?.displayName, id:away.team?.id, logo:cdnLogo(away.team), color:away.team?.color}};
     });
-
     const withSpreads=await Promise.all(base.map(async g=>{
       try{
         const idx=await api.oddsIndex(g.gameId); let spread=null;
         if(idx?.items?.length){
           const ref=idx.items[0].$ref||idx.items[0].href||idx.items[0];
           if(ref){
-            const od=await safeFetch(ref);
-            let s=null;
+            const od=await safeFetch(ref); let s=null;
             if(od?.details?.spread) s=Number(od.details.spread);
             else if(od?.spread) s=Number(od.spread);
             else if(od?.awayTeamOdds?.spread) s=Number(od.awayTeamOdds.spread);
@@ -191,11 +270,9 @@ async function loadEligibleGames(){
         return {...g, spread};
       }catch{ return {...g, spread:null}; }
     }));
-
     const eligible=withSpreads.filter(g=> g.spread==null ? true : g.spread<=SPREAD_LIMIT);
     gridNote.textContent=`Showing games with spread ≤ ${SPREAD_LIMIT} (unknown spreads included).`;
     gameCount.textContent=`${eligible.length} game${eligible.length===1?'':'s'} loaded`;
-
     for(const g of eligible){
       const band=`linear-gradient(90deg, ${g.away.color? '#'+g.away.color : '#1a232d'} 0%, ${g.home.color? '#'+g.home.color : '#26313c'} 100%)`;
       const kickoff=new Date(g.start).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'});
@@ -208,20 +285,65 @@ async function loadEligibleGames(){
             <div class="team" style="justify-content:flex-end">${g.home.logo?`<img src="${g.home.logo}" alt="">`:''}<div class="name">${g.home.name}</div></div>
           </div>
           <div class="small mono" style="margin-top:6px;opacity:.8">Spread: ${g.spread==null?'—':g.spread.toFixed(1)} · Kick: ${kickoff}</div>
-          <div class="lockRow"><button class="lockBtn">View live</button></div>
+          <div class="lockRow"><button class="lockBtn">🔒 Lock My View</button></div>
         </div>`;
-      card.querySelector('.lockBtn').addEventListener('click',()=>lockPick(g));
+      card.querySelector('.lockBtn').addEventListener('click',()=>lockPick(g,true));
       gamesGrid.appendChild(card);
     }
-  }catch(e){
-    console.error(e);
-    const box=document.getElementById('err'); box.style.display='block';
-    box.textContent='Failed to load ESPN scoreboard. See console.';
-  }
+  }catch(e){ console.error(e); showErr('Failed to load ESPN scoreboard.'); }
+}
+function showErr(m){errBox.textContent=m; errBox.style.display='block'}
+
+/* ---------- Lock + save pick ---------- */
+async function savePickToDB(weekKey,gameId){
+  const uid=await currentUserId(); if(!uid) return;
+  await sb.from('picks').upsert(
+    {user_id:uid,week_key:weekKey,game_id:gameId,locked_at:new Date().toISOString()},
+    {onConflict:'user_id,week_key'}
+  );
+}
+function rowLine(side,color,id){return `<div class="teamline" style="border-left:6px solid ${color? '#'+color : '#2a3643'}"><div class="left">${side.logo?`<img src="${side.logo}" alt="">`:''}<div style="font-weight:700">${side.name}</div></div><div id="${id}" style="font-weight:800">—</div></div>`;}
+function lockPick(g,save){
+  selected=g;
+  if(save) savePickToDB(WK,g.gameId).catch(console.error);
+  lastScoringIds.clear();
+  liveHeader.textContent=`${g.away.name} @ ${g.home.name}${g.spread!=null?` (spread ${g.spread.toFixed(1)})`:''}`;
+  boardTeams.innerHTML=rowLine(g.away,g.away.color,'awayScore')+rowLine(g.home,g.home.color,'homeScore');
+  topBar.style.display='block';
+  if(pollTimer) clearInterval(pollTimer);
+  refreshOnce(); pollTimer=setInterval(refreshOnce,POLL_MS);
 }
 
-// ---- Leaderboard (combined)
-const leaderboardCombined=document.getElementById('leaderboardCombined');
+/* ---------- Live refresh (selected) ---------- */
+async function refreshOnce(){
+  if(!selected) return;
+  try{
+    const [summary,box,pbp]=await Promise.all([api.summary(selected.gameId),api.box(selected.gameId),api.pbp(selected.gameId)]);
+    const comp=summary?.header?.competitions?.[0]||{}, status=comp.status||{};
+    const home=comp.competitors?.find(c=>c.homeAway==='home'); const away=comp.competitors?.find(c=>c.homeAway==='away');
+    const homeScore=Number(home?.score??0), awayScore=Number(away?.score??0);
+    document.getElementById('homeScore').textContent=homeScore;
+    document.getElementById('awayScore').textContent=awayScore;
+    clockEl.textContent=status?.displayClock ?? '—';
+    quarterEl.textContent=status?.period ?? '-';
+    stateEl.textContent=status?.type?.description || status?.type?.shortDetail || '—';
+
+    const row=await computeFantasyForGame(selected.gameId);
+    if(row){ scoreEl.textContent=row.score.toFixed(2); flowNotes.textContent=row.final?`Final • ${row.status}`:row.status; }
+
+    const scoringPlays=summary?.scoringPlays||[]; let newLog=[];
+    for(const sp of scoringPlays){
+      if(!lastScoringIds.has(sp.id)){
+        const desc=sp.text||sp.description||'',time=sp.clock?.displayValue||'',q=sp.period?.number?`Q${sp.period.number}`:''; newLog.push(`[${q} ${time}] ${desc}`);
+      }
+    }
+    for(const l of newLog.reverse()){const div=document.createElement('div'); div.textContent=l; scoringLog.prepend(div);}
+    scoringPlays.forEach(sp=>lastScoringIds.add(sp.id));
+  }catch(e){ console.error(e); }
+}
+
+/* ---------- Leaderboard (combined) ---------- */
+let showAll=false, lastLeaderboardRows=[];
 function renderGameLeaderboard(){
   leaderboardCombined.innerHTML='';
   const rows=showAll?lastLeaderboardRows:lastLeaderboardRows.slice(0,10);
@@ -244,10 +366,8 @@ function renderGameLeaderboard(){
 }
 toggleAllBtn.addEventListener('click',()=>{showAll=!showAll; renderGameLeaderboard();});
 
-const lbNote=document.getElementById('lbNote');
-const cdnLogoTeam=t=>t?.team?.logos?.[0]?.href || (t?.team?.id?`https://a.espncdn.com/i/teamlogos/ncaa/500/${t.team.id}.png`:null);
-
 async function computeFantasyForGame(eventId){
+  const cached=gameScoreCache.get(eventId); if(cached && cached.final) return cached;
   try{
     const [summary,box,pbp]=await Promise.all([api.summary(eventId),api.box(eventId),api.pbp(eventId)]);
     const comp=summary?.header?.competitions?.[0]||{}, status=comp.status||{};
@@ -257,6 +377,7 @@ async function computeFantasyForGame(eventId){
     const homeLogo=cdnLogo(home?.team), awayLogo=cdnLogo(away?.team);
     const homePts=Number(home?.score ?? 0), awayPts=Number(away?.score ?? 0);
 
+    /* team totals */
     let totals={yards:0,firstDowns:0,tfl:0,sacks:0,thirdMade:0,thirdAtt:0,fourthMade:0,fourthAtt:0,safeties:0};
     function add(a,k,f){const s=a.find(s=>s.name===k||s.abbreviation===k);return s?f(s):0;}
     for(const side of (summary?.boxscore?.teams||[])){
@@ -271,6 +392,7 @@ async function computeFantasyForGame(eventId){
     }
     const stopsFromEff=(totals.thirdAtt-totals.thirdMade)+(totals.fourthAtt-totals.fourthMade);
 
+    /* scoring plays */
     let TD=0,FG=0,XP=0,TWO=0,stReturnTD=0,blocks=0,defTdBonus=0,safeties=(totals.safeties||0);
     const scoringPlays=summary?.scoringPlays||[];
     for(const sp of scoringPlays){
@@ -282,7 +404,7 @@ async function computeFantasyForGame(eventId){
       if(d.includes('blocked')) blocks++;
     }
 
-    // PBP light parse for sacks/stops/etc
+    /* pbp fallbacks */
     let pbpPlays=[]; try{const gp=pbp?.gamepackageJSON; const collect=a=>{if(Array.isArray(a)) a.forEach(d=>{if(Array.isArray(d.plays)) pbpPlays.push(...d.plays);});}; collect(gp?.drives?.previous); collect(gp?.drives?.current);}catch{}
     let sacksP=0,tflP=0,stopsP=0,fdP=0,intP=0,frP=0,defTDP=0,stTDP=stReturnTD,safetyP=0,blockP=blocks;
     for(const p of pbpPlays){
@@ -308,73 +430,61 @@ async function computeFantasyForGame(eventId){
 
     const offensePts=TD*W.TD+FG*W.FG+XPf*W.XP+TWOf*W.TWO+totals.yards*W.YARD+totals.firstDowns*W.FIRST_DOWN;
     const defensePts=totals.sacks*W.SACK+totals.tfl*W.TFL+INT*W.INT+FR*W.FR+defTDB*W.DEF_TD_BONUS+safetiesF*W.SAFETY+stops*W.STOP;
-    const isFinal=(status?.type?.state==='post'||status?.type?.completed===true);
-    const margin=Math.abs(homePts-awayPts);
+    const isFinal=(status?.type?.state==='post'||status?.type?.completed===true), margin=Math.abs(homePts-awayPts);
     const closeBonus=(isFinal && margin<=7)?W.CLOSE_GAME:0, otBonus=((status?.period||0)>4 && isFinal)?W.OVERTIME:0;
     const score=Number((offensePts+defensePts+closeBonus+otBonus).toFixed(2));
 
-    return {awayName,homeName,awayLogo,homeLogo,awayPts,homePts,score,status:status?.type?.shortDetail||'—',final:isFinal};
-  }catch(e){ console.error('computeFantasyForGame failed',e); return null; }
+    const row={awayName,homeName,awayLogo,homeLogo,awayPts,homePts,score,status:status?.type?.shortDetail||'—',final:isFinal};
+    if(isFinal) gameScoreCache.set(eventId,row);
+    return row;
+  }catch(e){ console.error(e); return null; }
 }
-
 async function refreshLeaderboardCombined(){
   try{
     leaderboardCombined.innerHTML='<div class="small" style="color:#8ea0b3">Loading…</div>';
     const sbRes=await api.scoreboard(todayISO()); const events=sbRes?.events||[];
-    lbNote.textContent=`${events.length} game${events.length===1?'':'s'} on this board.`;
+    lbNote.textContent=`${events.length} game${events.length===1?'':'s'} on today’s board.`;
     const rows=(await Promise.all(events.map(e=>computeFantasyForGame(e.id)))).filter(Boolean);
     rows.sort((a,b)=>b.score-a.score); lastLeaderboardRows=rows; renderGameLeaderboard();
   }catch(e){ console.error(e); lbNote.textContent='Leaderboard load failed.'; }
 }
 
-// ---- Select a game to “view live”
-function lockPick(g){
-  selected=g;
-  lastScoringIds.clear();
-  liveHeader.textContent=`${g.away.name} @ ${g.home.name}${g.spread!=null?` (spread ${g.spread.toFixed(1)})`:''}`;
-  const row=(side,color,id)=>`<div class="teamline" style="border-left:6px solid ${color? '#'+color : '#2a3643'}"><div class="left">${side.logo?`<img src="${side.logo}" alt="">`:''}<div style="font-weight:700">${side.name}</div></div><div id="${id}" style="font-weight:800">—</div></div>`;
-  boardTeams.innerHTML=row(g.away,g.away.color,'awayScore')+row(g.home,g.home.color,'homeScore');
-  topBar.style.display='block';
-  if(pollTimer) clearInterval(pollTimer);
-  refreshOnce(); pollTimer=setInterval(refreshOnce,POLL_MS);
-}
-
-async function refreshOnce(){
-  if(!selected) return;
+/* ---------- Weekly players leaderboard (Supabase view) ---------- */
+async function renderPlayersWeeklyFromDB(){
+  const box=document.getElementById('playersLB');
   try{
-    const [summary,box,pbp]=await Promise.all([api.summary(selected.gameId),api.box(selected.gameId),api.pbp(selected.gameId)]);
-    const comp=summary?.header?.competitions?.[0]||{}, status=comp.status||{};
-    const home=comp.competitors?.find(c=>c.homeAway==='home'); const away=comp.competitors?.find(c=>c.homeAway==='away');
-    const homeScore=Number(home?.score??0), awayScore=Number(away?.score??0);
-    document.getElementById('homeScore').textContent=homeScore;
-    document.getElementById('awayScore').textContent=awayScore;
-    clockEl.textContent=status?.displayClock ?? '—';
-    quarterEl.textContent=status?.period ?? '-';
-    stateEl.textContent=status?.type?.description || status?.type?.shortDetail || '—';
+    const { data, error } = await sb.from('weekly_picks_with_names')
+      .select('display_name, game_id')
+      .eq('week_key', WK);
+    if(error) throw error;
+    if(!data?.length){ box.innerHTML='<div class="small" style="color:#8ea0b3">No picks yet this week.</div>'; return; }
 
-    // (Use same scoring as leaderboard)
-    const row=await computeFantasyForGame(selected.gameId);
-    if(row){ scoreEl.textContent=row.score.toFixed(2); flowNotes.textContent=row.final?`Final • ${row.status}`:row.status; }
-
-    // new scoring lines
-    const scoringPlays=summary?.scoringPlays||[]; let newLog=[];
-    for(const sp of scoringPlays){
-      if(!lastScoringIds.has(sp.id)){
-        const desc=sp.text||sp.description||'',time=sp.clock?.displayValue||'',q=sp.period?.number?`Q${sp.period.number}`:''; newLog.push(`[${q} ${time}] ${desc}`);
-      }
+    const rows=[];
+    for(const r of data){
+      const row=await computeFantasyForGame(r.game_id);
+      rows.push({name:r.display_name,label:row?`${row.awayName} @ ${row.homeName}`:r.game_id,status:row?.status||'—',score:row?.score??0});
     }
-    for(const l of newLog.reverse()){const div=document.createElement('div'); div.textContent=l; scoringLog.prepend(div);}
-    scoringPlays.forEach(sp=>lastScoringIds.add(sp.id));
+    rows.sort((a,b)=>b.score-a.score);
+    box.innerHTML='';
+    rows.forEach(r=>{
+      const div=document.createElement('div'); div.className='lbRow';
+      div.innerHTML=`<div class="lbTeam"><span class="lbName">${r.name}</span><span class="lbSmall mono" style="margin-left:8px">${r.label}</span></div><div class="lbPts mono">${r.score.toFixed(2)}</div><div class="lbMeta mono">${r.status}</div>`;
+      box.appendChild(div);
+    });
   }catch(e){
-    console.error(e);
+    box.innerHTML='<div class="small" style="color:#8ea0b3">Weekly board: view missing or no access.</div>';
   }
 }
 
-// ---- Boot
+/* ---------- Boot ---------- */
+toggleAllBtn.addEventListener('click',()=>{showAll=!showAll; renderGameLeaderboard();});
 (async function boot(){
+  await refreshAuthUI();
   await loadEligibleGames();
   refreshLeaderboardCombined();
+  renderPlayersWeeklyFromDB();
   lbTimer=setInterval(refreshLeaderboardCombined,LB_POLL_MS);
+  setInterval(renderPlayersWeeklyFromDB,60000);
 })();
 </script>
 </body>
